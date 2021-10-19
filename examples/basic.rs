@@ -4,12 +4,10 @@ extern crate sdl2_engine as engine;
 use engine::{ 
     Renderer,
     Scene,
-    sprites::Sprite,
-    sprites::SpriteAnimation,
     Entity,
-    transform::Position,
-    transform::Size,
     input::Key,
+    sprites::{ Sprite, SpriteAnimation, SpriteBuilder },
+    transform::{ Transform, Position, Size, },
 };
 
 
@@ -33,23 +31,24 @@ fn main() -> Result<(), String> {
         |swarm| {
             swarm.populate(&[
                 Entity {
-                    sprite: Sprite {
-                        texure_id: 0,
-                        position: Position { x: 100, y: 100 },
-                        size: Size { x: 64, y: 64 },
-        
-                        tile_size: Size { x: 32, y: 32 },
-                        num_tile_cols: 4,
-                        animation: 0,
-                        animations: vec![
+                    transform: Transform::default()
+                            .with_position(100, 100)
+                            .with_size(64, 64),
+
+                    sprite: SpriteBuilder::new(0)
+                        .with_tile_size(32, 32)
+                        .with_column_count(4)
+                        .with_start_animation(0)
+                        .with_animations(vec![
                             BABY_IDLE_ANIM.clone(),
                             BABY_WALK_ANIM.clone(),
                             KING_IDLE_ANIM.clone(),
                             KING_WALK_ANIM.clone(),
                             SOLDIER_IDLE_ANIM.clone(),
                             SOLDIER_WALK_ANIM.clone(),
-                        ]
-                    },
+                        ])
+                        .build(),
+
                     state: EntityState::default(),
                 }
             ]);
@@ -66,34 +65,36 @@ fn main() -> Result<(), String> {
     
                 if key_left ^ key_right {
                     if key_left {
-                        pool[*target].sprite.position.x -= (props.timer.delta_time / 2) as i32;
+                        pool[*target].transform.position.x -= (props.timer.delta_time / 2) as i32;
                     } else if key_right {
-                        pool[*target].sprite.position.x += (props.timer.delta_time / 2) as i32;
+                        pool[*target].transform.position.x += (props.timer.delta_time / 2) as i32;
                     }
                 }
                 
                 if key_up ^ key_down {
                     if key_up {
-                        pool[*target].sprite.position.y -= (props.timer.delta_time / 2) as i32;
+                        pool[*target].transform.position.y -= (props.timer.delta_time / 2) as i32;
                     } else if key_down {
-                        pool[*target].sprite.position.y += (props.timer.delta_time / 2) as i32;
+                        pool[*target].transform.position.y += (props.timer.delta_time / 2) as i32;
                     }
                 }
-    
-                if key_up | key_down | key_left | key_right {
-                    pool[*target].sprite.animation = match pool[*target].state.character {
-                        Character::Baby => BABY_WALK,
-                        Character::King => KING_WALK,
-                        Character::Soldier => SOLDIER_WALK,
-                    };
-                } else {
-                    pool[*target].sprite.animation = match pool[*target].state.character {
-                        Character::Baby => BABY_IDLE,
-                        Character::King => KING_IDLE,
-                        Character::Soldier => SOLDIER_IDLE,
-                    };
+
+                if let Some(sprite) = &mut pool[*target].sprite {
+                    if key_up | key_down | key_left | key_right {
+                       sprite.animation = match pool[*target].state.character {
+                            Character::Baby => BABY_WALK,
+                            Character::King => KING_WALK,
+                            Character::Soldier => SOLDIER_WALK,
+                        };
+                    } else {
+                       sprite.animation = match pool[*target].state.character {
+                            Character::Baby => BABY_IDLE,
+                            Character::King => KING_IDLE,
+                            Character::Soldier => SOLDIER_IDLE,
+                        };
+                    }
                 }
-    
+
                 if key_space {
                     pool[*target].state.character.cycle();
                 }
