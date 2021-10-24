@@ -58,8 +58,10 @@ impl Renderer {
     EntityState: Default + Clone,
     GameData: Default,
     {
+        // create a texture container for the canvas to draw from
         let texture_creator = self.canvas.borrow_mut().texture_creator();
 
+        // setup a render context to talk to while looping though all swarm pool objects
         let mut context = RenderContext { 
             textures: Vec::<Texture<'s>>::new(),
             canvas: self.canvas.clone(),
@@ -68,6 +70,7 @@ impl Renderer {
             input: Input::new(),
         };
 
+        // create texture maps from loaded surfaces
         for surface in &scene.surfaces {
             context.textures.push(
                 texture_creator
@@ -76,72 +79,82 @@ impl Renderer {
             );
         }
         
-        let mut swarm = Swarm::<Entity<EntityState>, RenderContext<GameData>>::new(1000, context);
+        // create scene object pool
+        let mut swarm = Swarm::<Entity<EntityState>, RenderContext<GameData>>::new(scene.pool_size, context);
 
+        // tell scene observer, scene initialization is complete
         (scene.on_start)(&mut swarm);
 
-        let mut running = true;
+        // start game loop
+        'game_loop: loop {
 
-        'game_loop: while running {
-
+            // reset frame based events
             swarm.properties.input.keyboard.releave_activity();
 
-            for sdl_event in self.event_pump.poll_iter() {
+            // capture/handle input events
+            while let Some(event) = self.event_pump.poll_event() {
+                match event {
+                    SdlEvent::Quit{ .. } => break 'game_loop,
 
-                if let SdlEvent::Quit{ .. } = sdl_event {
-                    break 'game_loop;
-                } 
-
-                if let SdlEvent::KeyDown { keycode, .. } = sdl_event {
-                    if let Some (key) = keycode {
-                        input::map_keyboard_input(&mut swarm.properties.input.keyboard, key, true);
-                    }
-                }
-        
-                if let SdlEvent::KeyUp { keycode, .. } = sdl_event {
-                    if let Some (key) = keycode {
-                        input::map_keyboard_input(&mut swarm.properties.input.keyboard, key, false);
-                    }
+                    SdlEvent::KeyDown { keycode, .. } => {
+                        if let Some (key) = keycode { 
+                            input::map_keys(&mut swarm.properties.input.keyboard, key, true);
+                        }
+                    },
+                    SdlEvent::KeyUp { keycode, .. } => {
+                        if let Some (key) = keycode { 
+                            input::map_keys(&mut swarm.properties.input.keyboard, key, false);
+                        }
+                    },
+                    _ => {},
                 }
             }
 
+            // tell scene observer to update their frame code
             (scene.on_update)(&mut swarm);
             
+            // clear screen buffer
             self.canvas.borrow_mut().clear();
 
+            // write screen buffer
+            swarm.for_all(|obj_index, pool, game| {
 
-            swarm.for_all(|target, pool, props| {
+                let target = &mut pool[*obj_index];
 
-                if let Some(sprite) = &mut pool[*target].sprite
+                if let Some(sprite) = &mut target.sprite
                 {
-                    sprite.update_animation(&props.timer.delta_time);
+                    sprite.update_animation(&game.timer.delta_time);
 
                     if let Some(dst) = &mut sprite.dst.0 {
-                        dst.set_x(pool[*target].transform.position.x);
-                        dst.set_y(pool[*target].transform.position.y);
-                        dst.set_width(pool[*target].transform.size.width);
-                        dst.set_height(pool[*target].transform.size.height);
+                        dst.set_x(target.transform.x);
+                        dst.set_y(target.transform.y);
+                        dst.set_width(target.transform.width);
+                        dst.set_height(target.transform.height);
                     }
 
-                    props.canvas.borrow_mut().copy_ex(
-                        &props.textures[sprite.texure_id],
+                    game.canvas.borrow_mut().copy_ex(
+                        &game.textures[sprite.texure_id],
                         sprite.src.0,
                         sprite.dst.0,
-                        pool[*target].transform.rotation,
+                        target.transform.rotation,
                         None,
-                        pool[*target].transform.flip.horizontal,
-                        pool[*target].transform.flip.vertical,
+                        target.transform.flip_horizontal,
+                        target.transform.flip_vertical,
                     ).unwrap();
                 }
 
             });
 
+            // present screen buffer
             self.canvas.borrow_mut().present();
 
+            // update frame timer
             swarm.properties.timer.sync();
         }
 
+        // tell the scene observer the scene has finisched
         (scene.on_end)();
+
         Ok(())
     }
 }

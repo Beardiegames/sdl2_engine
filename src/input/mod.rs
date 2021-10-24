@@ -15,7 +15,7 @@ impl Input {
     }
 }
 
-pub(crate) fn map_keyboard_input(input: &mut KeyboardInput, keycode: Keycode, state: bool) {
+pub(crate) fn map_keys(input: &mut KeyboardInput, keycode: Keycode, state: bool) {
     match keycode {
         Keycode::Right => input.set_state(Key::Right, state),
         Keycode::Left => input.set_state(Key::Left, state),

@@ -22,9 +22,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.101"
+version = "0.2.105"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
+checksum = "869d572136620d55835903746bcb5cdc54cb2851fd0aeec53220b4bb65ef3013"
 
 [[package]]
 name = "sdl2"
@@ -59,9 +59,9 @@ dependencies = [
 
 [[package]]
 name = "swarm_pool"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e5c1d45e73edf3745f5a157efcc8399b360487fa568ae7cd1c6cdb7c733802c"
+checksum = "0bf32f492609d9c42ff777631a3f3907568cc84f0f0707f802ff29397e86a6dd"
 
 [[package]]
 name = "version-compare"

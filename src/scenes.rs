@@ -6,6 +6,7 @@ use crate::swarm::Swarm;
 use crate::{Entity, RenderContext};
 
 pub struct Scene<'s, EntityState: Default + Clone, GameData> {
+    pub pool_size: usize,
     pub(crate) surfaces: Vec<(String, Surface<'s>)>,
     pub on_start: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>),
     pub on_update: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>),
@@ -15,6 +16,7 @@ pub struct Scene<'s, EntityState: Default + Clone, GameData> {
 impl<'s, EntityState: Default + Clone, GameData> Scene <'s, EntityState, GameData> {
 
     pub fn new(
+        pool_size: usize,
         asset_paths: &[&str], 
         on_start: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>), 
         on_update: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>), 
@@ -29,6 +31,6 @@ impl<'s, EntityState: Default + Clone, GameData> Scene <'s, EntityState, GameDat
             }
         }
 
-        Scene { surfaces, on_start, on_update, on_end, }
+        Scene { pool_size, surfaces, on_start, on_update, on_end, }
     }
 }

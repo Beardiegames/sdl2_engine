@@ -2,21 +2,24 @@
 #[derive(Default, Clone)]
 
 pub struct Transform {
-    pub position: Position,
-    pub size: Size,
+    pub x: i32, 
+    pub y: i32,
+    pub width: u32, 
+    pub height: u32,
     pub rotation: f64,
-    pub flip: Flip,
+    pub flip_horizontal: bool,
+    pub flip_vertical: bool,
 }
 
 impl Transform {
     pub fn with_position(mut self, x: i32, y: i32) -> Self {
-        self.position.x = x;
-        self.position.y = y;
+        self.x = x;
+        self.y = y;
         self
     }
     pub fn with_size(mut self, width: u32, height: u32) -> Self {
-        self.size.width = width;
-        self.size.height = height;
+        self.width = width;
+        self.height = height;
         self
     }
     pub fn with_rotation(mut self, deg: f64) -> Self {
@@ -24,25 +27,25 @@ impl Transform {
         self
     }
     pub fn with_horizontal_flip(mut self) -> Self {
-        self.flip.horizontal = true;
+        self.flip_horizontal = true;
         self
     }
     pub fn with_vertical_flip(mut self) -> Self {
-        self.flip.vertical = true;
+        self.flip_vertical = true;
         self
     }
 }
 
-#[derive(Default, Clone)]
-pub struct Position { pub x: i32, pub y: i32 }
+// #[derive(Default, Clone)]
+// pub struct Position { pub x: i32, pub y: i32 }
 
 
-#[derive(Default, Clone)]
-pub struct Size { pub width: u32, pub height: u32 }
+// #[derive(Default, Clone)]
+// pub struct Size { pub width: u32, pub height: u32 }
     
 
-#[derive(Default, Clone)]
-pub struct Flip {
-    pub horizontal: bool,
-    pub vertical: bool,
-}
+// #[derive(Default, Clone)]
+// pub struct Flip {
+//     pub horizontal: bool,
+//     pub vertical: bool,
+// }

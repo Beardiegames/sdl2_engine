@@ -2,8 +2,6 @@ use std::ops::RangeInclusive;
 
 use sdl2::rect::Rect;
 
-use crate::transform::{Position, Size};
-
 
 #[derive(Clone)]
 pub(crate) struct PoolRect(pub(crate) Option<Rect>); 
@@ -14,6 +12,19 @@ impl Default for PoolRect {
     }
 }
 
+
+#[derive(Clone)]
+pub struct TileSize { pub width: u32, pub height: u32 }
+
+impl Default for TileSize {
+    fn default() -> Self { Self { width: 64, height: 64 } }
+}
+
+
+#[derive(Default, Clone)]
+pub struct TilePosition { pub x: i32, pub y: i32 }
+
+
 pub struct SpriteBuilder(Sprite);
 
 impl SpriteBuilder {
@@ -21,7 +32,7 @@ impl SpriteBuilder {
         SpriteBuilder(Sprite {
             texure_id: texure_id, 
 
-            tile_size: Size::default(),
+            tile_size: TileSize::default(),
             num_tile_cols: 4,
             animation: 0,
             animations: Vec::new(),
@@ -31,7 +42,7 @@ impl SpriteBuilder {
         })
     }
     pub fn with_tile_size(mut self, width: u32, height: u32) -> Self {
-        self.0.tile_size = Size { width, height };
+        self.0.tile_size = TileSize { width, height };
         self
     }
 
@@ -57,7 +68,7 @@ impl SpriteBuilder {
 pub struct Sprite {
     pub texure_id: usize,
 
-    pub tile_size: Size,
+    pub tile_size: TileSize,
     pub num_tile_cols: u16,
     pub animation: usize,
     pub animations: Vec<SpriteAnimation>,
@@ -68,23 +79,23 @@ pub struct Sprite {
 
 impl Sprite {
 
-    pub fn tile_position(&self) -> Position {
-        if self.animation < self.animations.len() {
-            let tile = self.animations[self.animation].tile_range.start() 
-                + self.animations[self.animation].current_frame;
+    // pub fn tile_position(&self) -> TilePosition {
+    //     if self.animation < self.animations.len() {
+    //         let tile = self.animations[self.animation].tile_range.start() 
+    //             + self.animations[self.animation].current_frame;
 
-            let col = tile % self.num_tile_cols;
-            let row = tile / self.num_tile_cols;
+    //         let col = tile % self.num_tile_cols;
+    //         let row = tile / self.num_tile_cols;
 
-            Position {
-               x: (col as u32 * self.tile_size.width) as i32, 
-               y: (row as u32 * self.tile_size.height) as i32,
-            }
+    //         TilePosition {
+    //            x: (col as u32 * self.tile_size.width) as i32, 
+    //            y: (row as u32 * self.tile_size.height) as i32,
+    //         }
 
-        } else {
-            Position{ x: 0, y: 0 }
-        }
-    }
+    //     } else {
+    //         TilePosition::default()
+    //     }
+    // }
 
     pub fn update_animation(&mut self, _delta_time: &u64) {
         if self.animation < self.animations.len() {

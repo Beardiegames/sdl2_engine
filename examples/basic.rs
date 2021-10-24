@@ -1,18 +1,14 @@
 
 extern crate sdl2_engine as engine;
 
-use engine::{ 
-    Renderer,
-    Scene,
-    Entity,
-    input::Key,
-    sprites::{ Sprite, SpriteAnimation, SpriteBuilder },
-    transform::{ Transform, Position, Size, },
-};
+use engine::{ Renderer, Scene, Entity, };
+use engine::input::{ Key };
+use engine::sprites::{ SpriteAnimation, SpriteBuilder };
+use engine::transform::{ Transform };
 
 
 #[derive(Default, Clone)]
-struct EntityState {
+struct ObjState {
     character: Character,
 }
 
@@ -24,70 +20,94 @@ struct GameData {
 fn main() -> Result<(), String> {
     let mut renderer = Renderer::new("TEST", 640, 480)?;
 
-    let mut scene = Scene::<EntityState, GameData>::new(
+    
 
+    let mut scene = Scene::<ObjState, GameData>::new(
+        100_000,
         &["assets/characters.bmp"],
 
         |swarm| {
-            swarm.populate(&[
-                Entity {
-                    transform: Transform::default()
-                            .with_position(100, 100)
-                            .with_size(64, 64),
 
-                    sprite: SpriteBuilder::new(0)
-                        .with_tile_size(32, 32)
-                        .with_column_count(4)
-                        .with_start_animation(0)
-                        .with_animations(vec![
-                            BABY_IDLE_ANIM.clone(),
-                            BABY_WALK_ANIM.clone(),
-                            KING_IDLE_ANIM.clone(),
-                            KING_WALK_ANIM.clone(),
-                            SOLDIER_IDLE_ANIM.clone(),
-                            SOLDIER_WALK_ANIM.clone(),
-                        ])
-                        .build(),
+            let mut populous = Vec::<Entity<ObjState>>::new();
+            let mut i = 0;
 
-                    state: EntityState::default(),
-                }
-            ]);
+            for i in 0..50_000 {
+                let x = (i % 100) * 64;
+                let y = (i / 100) * 64;
+
+                populous.push(
+                    Entity {
+                        transform: Transform::default()
+                                .with_position(x, y)
+                                .with_size(64, 64),
+                
+                        sprite: SpriteBuilder::new(0)
+                                .with_tile_size(32, 32)
+                                .with_column_count(4)
+                                .with_start_animation(0)
+                                .with_animations(vec![
+                                    BABY_IDLE_ANIM.clone(),
+                                    BABY_WALK_ANIM.clone(),
+                                    KING_IDLE_ANIM.clone(),
+                                    KING_WALK_ANIM.clone(),
+                                    SOLDIER_IDLE_ANIM.clone(),
+                                    SOLDIER_WALK_ANIM.clone(),
+                                ])
+                                .build(),
+                
+                        state: ObjState::default(),
+                    }
+                );
+            }
+
+            swarm.populate(&populous);
         },
 
         |swarm| {
-            swarm.for_all(|target, pool, props| {
+            swarm.for_all(|object_index, pool, game| {
 
-                let key_left = props.input.keyboard.down(Key::Left);
-                let key_right = props.input.keyboard.down(Key::Right);
-                let key_up = props.input.keyboard.down(Key::Up);
-                let key_down = props.input.keyboard.down(Key::Down);
-                let key_space = props.input.keyboard.pressed(Key::Space);
-    
+                let target = &mut pool[*object_index];
+
+                let key_pressed_left = game.input.keyboard.pressed(Key::Left);
+                let key_pressed_right = game.input.keyboard.pressed(Key::Right);
+                let key_released_space = game.input.keyboard.released(Key::Space);
+
+                let key_left = game.input.keyboard.down(Key::Left);
+                let key_right = game.input.keyboard.down(Key::Right);
+                let key_up = game.input.keyboard.down(Key::Up);
+                let key_down = game.input.keyboard.down(Key::Down);
+
+                
+                if key_pressed_left { target.transform.flip_horizontal = false; }
+                if key_pressed_right { target.transform.flip_horizontal = true; }
+
                 if key_left ^ key_right {
                     if key_left {
-                        pool[*target].transform.position.x -= (props.timer.delta_time / 2) as i32;
+                        target.transform.x -= (game.timer.delta_time / 2) as i32;
                     } else if key_right {
-                        pool[*target].transform.position.x += (props.timer.delta_time / 2) as i32;
+                        target.transform.x += (game.timer.delta_time / 2) as i32;     
                     }
                 }
                 
                 if key_up ^ key_down {
                     if key_up {
-                        pool[*target].transform.position.y -= (props.timer.delta_time / 2) as i32;
+                        target.transform.y -= (game.timer.delta_time / 2) as i32;
+                        target.transform.rotation -= game.timer.delta_time as f64 * 0.5;
                     } else if key_down {
-                        pool[*target].transform.position.y += (props.timer.delta_time / 2) as i32;
+                        target.transform.y += (game.timer.delta_time / 2) as i32;
+                        target.transform.rotation += game.timer.delta_time as f64 * 0.5;
                     }
                 }
 
-                if let Some(sprite) = &mut pool[*target].sprite {
+                if let Some(sprite) = &mut target.sprite {
                     if key_up | key_down | key_left | key_right {
-                       sprite.animation = match pool[*target].state.character {
+                       sprite.animation = match target.state.character {
                             Character::Baby => BABY_WALK,
                             Character::King => KING_WALK,
                             Character::Soldier => SOLDIER_WALK,
                         };
                     } else {
-                       sprite.animation = match pool[*target].state.character {
+                       sprite.animation = match target.state.character {
                             Character::Baby => BABY_IDLE,
                             Character::King => KING_IDLE,
                             Character::Soldier => SOLDIER_IDLE,
@@ -95,8 +115,8 @@ fn main() -> Result<(), String> {
                     }
                 }
 
-                if key_space {
-                    pool[*target].state.character.cycle();
+                if key_released_space {
+                    target.state.character.cycle();
                 }
             });
         },
@@ -127,7 +147,6 @@ impl Character {
 impl Default for Character {
     fn default() -> Self { Character::Baby }
 }
-
 
 
 // GAME DATA
