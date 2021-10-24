@@ -7,4 +7,4 @@ edition = "2018"
 
 [dependencies]
 sdl2 = "0.34.5"
-swarm_pool = "0.1.8"
+swarm_pool = "0.1.9"
