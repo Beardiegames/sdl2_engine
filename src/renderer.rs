@@ -8,8 +8,19 @@ use sdl2::{
 };
 use swarm::Swarm;
 
-use crate::{Entity, Scene, input::{self, Input}, timer::UpdateTimer};
+use crate::{
+    Entity, Scene, camera::Camera, 
+    input::{ self, Input }, 
+    timer::UpdateTimer
+};
 
+#[derive(Clone)]
+pub struct Screen {
+    pub width: u32,
+    pub height: u32,
+    pub center_x: i32,
+    pub center_y: i32,
+}
 
 pub struct RenderContext<'c, GameData> {
     textures: Vec<Texture<'c>>,
@@ -17,11 +28,14 @@ pub struct RenderContext<'c, GameData> {
     pub timer: UpdateTimer,
     pub data: GameData,
     pub input: Input,
+    pub camera: Camera,
+    pub screen : Screen,
 }
 
 pub struct Renderer {
     pub event_pump: sdl2::EventPump,
     pub canvas: Rc<RefCell<Canvas<Window>>>,
+    pub screen : Screen,
 }
 
 impl Renderer {
@@ -47,6 +61,12 @@ impl Renderer {
         let renderer = Renderer {
             event_pump,
             canvas,
+            screen: Screen { 
+                width, 
+                height,
+                center_x: width as i32 / 2,
+                center_y: height as i32 / 2,
+            },
         };
 
         Ok(renderer)
@@ -68,6 +88,8 @@ impl Renderer {
             timer: UpdateTimer::new(target_fps),
             data: GameData::default(),
             input: Input::new(),
+            camera: Camera { x:0.0, y:0.0, zoom:1.0, zpow: 1.0, },
+            screen: self.screen.clone(),
         };
 
         // create texture maps from loaded surfaces
@@ -106,12 +128,51 @@ impl Renderer {
                             input::map_keys(&mut swarm.properties.input.keyboard, key, false);
                         }
                     },
+
+                    SdlEvent::MouseMotion {x, y, ..} => {
+                        swarm.properties.input.mouse.x = x;
+                        swarm.properties.input.mouse.y = y;
+                    },
+                    SdlEvent::MouseButtonUp {mouse_btn, ..} => {
+                        match mouse_btn {
+                            sdl2::mouse::MouseButton::Left => swarm.properties.input.mouse.left_button = false,
+                            sdl2::mouse::MouseButton::Right => swarm.properties.input.mouse.right_button = false,
+                            sdl2::mouse::MouseButton::Middle => swarm.properties.input.mouse.middle_button = false,
+                            _ => {},
+                        };
+                    },
+                    SdlEvent::MouseButtonDown {mouse_btn, ..} => {
+                        match mouse_btn {
+                            sdl2::mouse::MouseButton::Left => swarm.properties.input.mouse.left_button = true,
+                            sdl2::mouse::MouseButton::Right => swarm.properties.input.mouse.right_button = true,
+                            sdl2::mouse::MouseButton::Middle => swarm.properties.input.mouse.middle_button = true,
+                            _ => {},
+                        };
+                    },
+
+                    SdlEvent::ControllerDeviceAdded {which, ..} => {
+                        swarm.properties.input.controllers.add(which);
+                    },
+                    SdlEvent::ControllerDeviceRemoved {which, ..} => {
+                        swarm.properties.input.controllers.remove(which);
+                    },
+                    SdlEvent::ControllerAxisMotion {which, axis, value, ..} => {
+                        swarm.properties.input.controllers.set_axis(which, &axis, value);
+                    },
+                    SdlEvent::ControllerButtonUp {which, button, ..} => {
+                        swarm.properties.input.controllers.set_button(which, &button, false);
+                    },
+                    SdlEvent::ControllerButtonDown {which, button, ..} => {
+                        swarm.properties.input.controllers.set_button(which, &button, true);
+                    },
                     _ => {},
                 }
             }
 
             // tell scene observer to update their frame code
             (scene.on_update)(&mut swarm);
+
+            swarm.properties.camera.set_power();
             
             // clear screen buffer
             self.canvas.borrow_mut().clear();
@@ -119,29 +180,33 @@ impl Renderer {
             // write screen buffer
             swarm.for_all(|obj_index, pool, game| {
 
-                let target = &mut pool[*obj_index];
+                //let target = &mut pool[*obj_index];
 
-                if let Some(sprite) = &mut target.sprite
-                {
-                    sprite.update_animation(&game.timer.delta_time);
+                // if let Some(sprite) = &mut target.sprite
+                // {
+                    pool[*obj_index].sprite.update_animation(&game.timer.frame_duration);
 
-                    if let Some(dst) = &mut sprite.dst.0 {
-                        dst.set_x(target.transform.x);
-                        dst.set_y(target.transform.y);
-                        dst.set_width(target.transform.width);
-                        dst.set_height(target.transform.height);
+                    if let Some(dst) = &mut pool[*obj_index].sprite.dst.0 {
+                        let x = pool[*obj_index].transform.x - game.camera.x;
+                        let y = pool[*obj_index].transform.y - game.camera.y;
+                        
+
+                        dst.set_x(game.screen.center_x + (x * game.camera.zpow) as i32);
+                        dst.set_y(game.screen.center_y + (y * game.camera.zpow) as i32);
+                        dst.set_width((pool[*obj_index].transform.width as f32 * game.camera.zpow) as u32);
+                        dst.set_height((pool[*obj_index].transform.height as f32 * game.camera.zpow) as u32);
                     }
 
                     game.canvas.borrow_mut().copy_ex(
-                        &game.textures[sprite.texure_id],
-                        sprite.src.0,
-                        sprite.dst.0,
-                        target.transform.rotation,
+                        &game.textures[pool[*obj_index].sprite.texure_id],
+                        pool[*obj_index].sprite.src.0,
+                        pool[*obj_index].sprite.dst.0,
+                        pool[*obj_index].transform.rotation,
                         None,
-                        target.transform.flip_horizontal,
-                        target.transform.flip_vertical,
+                        pool[*obj_index].transform.flip_horizontal,
+                        pool[*obj_index].transform.flip_vertical,
                     ).unwrap();
-                }
+               // }
 
             });
 

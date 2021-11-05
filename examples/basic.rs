@@ -29,11 +29,11 @@ fn main() -> Result<(), String> {
         |swarm| {
 
             let mut populous = Vec::<Entity<ObjState>>::new();
-            let mut i = 0;
+            let mut i: i32 = 0;
 
             for i in 0..50_000 {
-                let x = (i % 100) * 64;
-                let y = (i / 100) * 64;
+                let x = (i as f32 % 100.0) * 64.0;
+                let y = (i as f32 / 100.0) * 64.0;
 
                 populous.push(
                     Entity {
@@ -64,9 +64,45 @@ fn main() -> Result<(), String> {
         },
 
         |swarm| {
+
+            let delta_time = swarm.properties.timer.delta_time as f32;
+
+            let cam_left = swarm.properties.input.keyboard.down(Key::A);
+            let cam_right = swarm.properties.input.keyboard.down(Key::D);
+            let cam_up = swarm.properties.input.keyboard.down(Key::W);
+            let cam_down = swarm.properties.input.keyboard.down(Key::S);
+            let cam_zoom_in = swarm.properties.input.keyboard.down(Key::E);
+            let cam_zoom_out = swarm.properties.input.keyboard.down(Key::Q);
+
+            if cam_left ^ cam_right {
+                if cam_left {
+                    swarm.properties.camera.x -= delta_time * 200.0;
+                } else if cam_right {
+                    swarm.properties.camera.x += delta_time * 200.0;     
+                }
+            }
+            
+            if cam_up ^ cam_down {
+                if cam_up {
+                    swarm.properties.camera.y -= delta_time * 200.0;
+                } else if cam_down {
+                    swarm.properties.camera.y += delta_time * 200.0;     
+                }
+            }
+
+            if cam_zoom_in ^ cam_zoom_out {
+                if cam_zoom_in {
+                    swarm.properties.camera.zoom -= delta_time * 0.1;
+                } else if cam_zoom_out {
+                    swarm.properties.camera.zoom += delta_time * 0.1;    
+                }
+            }
+
+
             swarm.for_all(|object_index, pool, game| {
 
                 let target = &mut pool[*object_index];
+                let delta_time = game.timer.delta_time as f32;
 
                 let key_pressed_left = game.input.keyboard.pressed(Key::Left);
                 let key_pressed_right = game.input.keyboard.pressed(Key::Right);
@@ -83,37 +119,37 @@ fn main() -> Result<(), String> {
 
                 if key_left ^ key_right {
                     if key_left {
-                        target.transform.x -= (game.timer.delta_time / 2) as i32;
+                        target.transform.x -= delta_time * 200.0;
                     } else if key_right {
-                        target.transform.x += (game.timer.delta_time / 2) as i32;     
+                        target.transform.x += delta_time * 200.0;     
                     }
                 }
                 
                 if key_up ^ key_down {
                     if key_up {
-                        target.transform.y -= (game.timer.delta_time / 2) as i32;
-                        target.transform.rotation -= game.timer.delta_time as f64 * 0.5;
+                        target.transform.y -= delta_time * 200.0;
+                        target.transform.rotation -= delta_time as f64 * 0.5;
                     } else if key_down {
-                        target.transform.y += (game.timer.delta_time / 2) as i32;
-                        target.transform.rotation += game.timer.delta_time as f64 * 0.5;
+                        target.transform.y += delta_time * 200.0;
+                        target.transform.rotation += delta_time as f64 * 0.5;
                     }
                 }
 
-                if let Some(sprite) = &mut target.sprite {
+                //if let Some(sprite) = &mut target.sprite {
                     if key_up | key_down | key_left | key_right {
-                       sprite.animation = match target.state.character {
+                       target.sprite.animation = match target.state.character {
                             Character::Baby => BABY_WALK,
                             Character::King => KING_WALK,
                             Character::Soldier => SOLDIER_WALK,
                         };
                     } else {
-                       sprite.animation = match target.state.character {
+                       target.sprite.animation = match target.state.character {
                             Character::Baby => BABY_IDLE,
                             Character::King => KING_IDLE,
                             Character::Soldier => SOLDIER_IDLE,
                         };
                     }
-                }
+                //}
 
                 if key_released_space {
                     target.state.character.cycle();

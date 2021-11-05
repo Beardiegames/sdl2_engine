@@ -2,8 +2,9 @@
 #[derive(Default, Clone)]
 
 pub struct Transform {
-    pub x: i32, 
-    pub y: i32,
+    pub x: f32, 
+    pub y: f32,
+    pub z: f32,
     pub width: u32, 
     pub height: u32,
     pub rotation: f64,
@@ -12,9 +13,13 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn with_position(mut self, x: i32, y: i32) -> Self {
+    pub fn with_position(mut self, x: f32, y: f32) -> Self {
         self.x = x;
         self.y = y;
+        self
+    }
+    pub fn with_depth(mut self, z: f32) -> Self {
+        self.z = z;
         self
     }
     pub fn with_size(mut self, width: u32, height: u32) -> Self {

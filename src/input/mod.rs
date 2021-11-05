@@ -1,16 +1,24 @@
 mod keyboard;
+mod mouse;
+mod controller;
 
 use sdl2::keyboard::Keycode;
 pub use keyboard::{ Key, KeyboardInput };
+pub use mouse::{ MouseInput };
+pub use controller::{ ControllerList };
 
 pub struct Input {
     pub keyboard: KeyboardInput,
+    pub mouse: MouseInput,
+    pub controllers: ControllerList,
 }
 
 impl Input {
     pub fn new() -> Self {
         Input { 
             keyboard: KeyboardInput::new(),
+            mouse: MouseInput::new(),
+            controllers: ControllerList::new(),
         }
     }
 }

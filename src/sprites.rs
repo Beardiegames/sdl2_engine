@@ -58,8 +58,8 @@ impl SpriteBuilder {
         self.0.animations = animations;
         self
     }
-    pub fn build(self) -> Option<Sprite> {
-        Some(self.0)
+    pub fn build(self) -> Sprite {
+        self.0
     }
 }
 
@@ -97,15 +97,15 @@ impl Sprite {
     //     }
     // }
 
-    pub fn update_animation(&mut self, _delta_time: &u64) {
+    pub fn update_animation(&mut self, frame_dration: &u32) {
         if self.animation < self.animations.len() {
 
             // increment animation frame
             let anim = &mut self.animations[self.animation];
             
-            anim.millis_passed += *_delta_time;
+            anim.millis_passed += *frame_dration; //(*_delta_time * 1_000.0) as u64;
             anim.millis_passed = anim.millis_passed % 
-                (anim.millis_per_frame * anim.tile_range.len() as u64);
+                (anim.millis_per_frame * anim.tile_range.len() as u32);
 
             anim.current_frame = (anim.millis_passed / anim.millis_per_frame) as u16;
 
@@ -131,6 +131,6 @@ impl Sprite {
 pub struct SpriteAnimation {
     pub current_frame: u16,
     pub tile_range: RangeInclusive<u16>,
-    pub millis_per_frame: u64,
-    pub millis_passed: u64,
+    pub millis_per_frame: u32,
+    pub millis_passed: u32,
 }
