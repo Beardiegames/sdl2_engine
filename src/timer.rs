@@ -13,6 +13,22 @@ pub struct UpdateTimer {
     num_samples:u32,
 }
 
+impl Default for UpdateTimer {
+    fn default() -> Self {
+        UpdateTimer {
+            play_time: SystemTime::now(),
+            target_time: 1000,
+            cycle_time: 0,
+            delay_time: 0,
+            delta_time: 0.0,
+            frame_duration: 0,
+            sample_delay:0,
+            num_samples:0,
+        }
+        
+    }
+}
+
 impl UpdateTimer {
     pub fn new(target_fps: u64) -> Self {
         UpdateTimer {

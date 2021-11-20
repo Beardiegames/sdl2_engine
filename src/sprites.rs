@@ -2,8 +2,10 @@ use std::ops::RangeInclusive;
 
 use sdl2::rect::Rect;
 
+use crate::transform::Transform;
 
-#[derive(Clone)]
+
+#[derive(Clone, Debug)]
 pub(crate) struct PoolRect(pub(crate) Option<Rect>); 
 
 impl Default for PoolRect {
@@ -28,17 +30,17 @@ pub struct TilePosition { pub x: i32, pub y: i32 }
 pub struct SpriteBuilder(Sprite);
 
 impl SpriteBuilder {
-    pub fn new(texure_id: usize) -> Self {
+    pub fn new(texture_id: usize) -> Self {
         SpriteBuilder(Sprite {
-            texure_id: texure_id, 
+            texture_id: texture_id, 
 
             tile_size: TileSize::default(),
             num_tile_cols: 4,
             animation: 0,
             animations: Vec::new(),
 
-            src: PoolRect::default(),
-            dst: PoolRect::default()
+            // src: PoolRect::default(),
+            // dst: PoolRect::default()
         })
     }
     pub fn with_tile_size(mut self, width: u32, height: u32) -> Self {
@@ -63,18 +65,26 @@ impl SpriteBuilder {
     }
 }
 
+#[derive(Default, Clone, Debug)]
+pub struct Image {
+    pub(crate) texture_id: usize,
+    pub(crate) src: PoolRect,
+    pub(crate) dst: PoolRect,
+    pub(crate) transform: Transform,
+}
+
 
 #[derive(Default, Clone)]
 pub struct Sprite {
-    pub texure_id: usize,
-
+    pub texture_id: usize,
+     
     pub tile_size: TileSize,
     pub num_tile_cols: u16,
     pub animation: usize,
     pub animations: Vec<SpriteAnimation>,
 
-    pub(crate) src: PoolRect,
-    pub(crate) dst: PoolRect,
+    //pub(crate) src: PoolRect,
+    //pub(crate) dst: PoolRect,
 }
 
 impl Sprite {
@@ -97,7 +107,7 @@ impl Sprite {
     //     }
     // }
 
-    pub fn update_animation(&mut self, frame_dration: &u32) {
+    pub fn update_animation(&mut self, frame_dration: &u32, image: &mut Image) {
         if self.animation < self.animations.len() {
 
             // increment animation frame
@@ -117,7 +127,9 @@ impl Sprite {
             let row = tile / self.num_tile_cols;
 
             // update render positions
-            if let Some(src) = &mut self.src.0 {
+            image.texture_id = self.texture_id;
+
+            if let Some(src) = &mut image.src.0 {
                 src.set_x((col as u32 * self.tile_size.width) as i32);
                 src.set_y((row as u32 * self.tile_size.height) as i32);
                 src.set_width(self.tile_size.width);

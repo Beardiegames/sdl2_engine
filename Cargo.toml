@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 sdl2 = "0.34.5"
 swarm_pool = "0.1.9"
+multi_threaded_pool = { version = "0.1.5", git = "https://github.com/Beardiegames/multi_threaded_pool.git" }

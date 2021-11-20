@@ -7,6 +7,8 @@ pub use keyboard::{ Key, KeyboardInput };
 pub use mouse::{ MouseInput };
 pub use controller::{ ControllerList };
 
+
+#[derive(Default, Clone, Debug)]
 pub struct Input {
     pub keyboard: KeyboardInput,
     pub mouse: MouseInput,

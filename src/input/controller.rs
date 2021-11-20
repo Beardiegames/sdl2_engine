@@ -1,6 +1,8 @@
 use sdl2::controller::Axis;
 use sdl2::controller::Button;
 
+
+#[derive(Default, Clone, Debug)]
 pub struct ControllerList(Vec<ControllerInput>);
 
 impl ControllerList {
@@ -34,6 +36,8 @@ impl ControllerList {
     }
 }
 
+
+#[derive(Default, Clone, Debug)]
 pub struct ControllerInput {
     pub id: u32,
 

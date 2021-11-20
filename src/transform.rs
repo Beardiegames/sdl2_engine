@@ -1,5 +1,5 @@
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 
 pub struct Transform {
     pub x: f32, 

@@ -1,26 +1,41 @@
+use std::marker::PhantomData;
 use std::path::Path;
 
+use multi_threaded_pool::Cluster;
 use sdl2::surface::Surface;
 
 use crate::swarm::Swarm;
-use crate::{Entity, RenderContext};
+use crate::{Entity};
 
-pub struct Scene<'s, EntityState: Default + Clone, GameData> {
+
+pub type ObserverCallback<ObjectType, LocalData> = dyn FnMut(&mut Cluster<Entity<ObjectType>, LocalData>);
+
+pub struct Scene<'s> //, ObjectType, Callback, SharedData, LocalData>
+// where   ObjectType: Default + Clone + Send,
+//         Callback: FnMut(&mut Cluster<Entity<ObjectType>, SharedData, LocalData>) + Clone,
+{
     pub pool_size: usize,
     pub(crate) surfaces: Vec<(String, Surface<'s>)>,
-    pub on_start: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>),
-    pub on_update: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>),
-    pub on_end: fn(),
+    // pub on_start: Callback,
+    // pub on_update: Callback,
+    // pub on_end: Callback,
+
+    // ph_ot: PhantomData<ObjectType>,
+    // ph_sd: PhantomData<SharedData>,
+    // ph_ld: PhantomData<LocalData>,
 }
 
-impl<'s, EntityState: Default + Clone, GameData> Scene <'s, EntityState, GameData> {
-
+// impl<'s, ObjectType, Callback, SharedData, LocalData> Scene <'s, ObjectType, Callback, SharedData, LocalData>
+// where   ObjectType: Default + Clone + Send,
+//         Callback: FnMut(&mut Cluster<Entity<ObjectType>, SharedData, LocalData>) + Clone,
+// {
+impl<'s> Scene <'s> {
     pub fn new(
         pool_size: usize,
         asset_paths: &[&str], 
-        on_start: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>), 
-        on_update: fn(&mut Swarm<Entity<EntityState>, RenderContext<GameData>>), 
-        on_end: fn()
+        // on_start: Callback, 
+        // on_update: Callback, 
+        // on_end: Callback
     ) -> Self {
 
         let mut surfaces = Vec::<(String, Surface<'s>)>::new();
@@ -31,6 +46,12 @@ impl<'s, EntityState: Default + Clone, GameData> Scene <'s, EntityState, GameDat
             }
         }
 
-        Scene { pool_size, surfaces, on_start, on_update, on_end, }
+        Scene { 
+            pool_size, surfaces, 
+            // on_start, on_update, on_end, 
+            // ph_ot: PhantomData,
+            // ph_sd: PhantomData,
+            // ph_ld: PhantomData,
+        }
     }
 }

@@ -1,4 +1,6 @@
 
+
+#[derive(Default, Clone, Debug)]
 pub struct MouseInput {
     pub x: i32,
     pub y: i32,

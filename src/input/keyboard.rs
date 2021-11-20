@@ -15,6 +15,7 @@ pub enum Key {
     X = 44, C = 45, V = 46, B = 47, N = 48, M = 49,
 }
 
+#[derive(Default, Clone, Debug)]
 pub struct KeyboardInput {
     pub states: Vec<bool>,
     pub changed: Vec<bool>,
