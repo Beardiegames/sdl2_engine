@@ -46,7 +46,7 @@ impl UpdateTimer {
         self.sample_delay += self.frame_duration;
         self.num_samples += 1;
         if self.sample_delay > 3000 {
-            println!("average fps: {}", self.sample_delay / self.num_samples);
+            println!("average fps: {}", 1000 / (self.sample_delay / self.num_samples));
             self.sample_delay = 0;
             self.num_samples = 0;
         }

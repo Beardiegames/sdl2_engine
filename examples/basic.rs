@@ -23,7 +23,7 @@ fn main() -> Result<(), String> {
     
 
     let mut scene = Scene::<ObjState, GameData>::new(
-        100_000,
+        50_000,
         &["assets/characters.bmp"],
 
         |swarm| {
