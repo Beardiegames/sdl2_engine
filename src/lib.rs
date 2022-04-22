@@ -11,11 +11,13 @@ mod scenes;
 
 pub use scenes::Scene;
 pub use renderer::{ Renderer, RenderContext };
+pub use swarm::*;
 
 use sprites::Sprite;
 use transform::Transform;
-#[allow(unused)]
-use camera::Camera;
+
+// #[allow(unused)]
+// use camera::Camera;
 
 
 #[derive(Default, Clone)]
