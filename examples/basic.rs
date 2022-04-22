@@ -29,7 +29,6 @@ fn main() -> Result<(), String> {
         |swarm| {
 
             let mut populous = Vec::<Entity<ObjState>>::new();
-            let mut i: i32 = 0;
 
             for i in 0..50_000 {
                 let x = (i as f32 % 100.0) * 64.0;

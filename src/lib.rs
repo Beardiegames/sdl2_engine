@@ -14,6 +14,7 @@ pub use renderer::{ Renderer, RenderContext };
 
 use sprites::Sprite;
 use transform::Transform;
+#[allow(unused)]
 use camera::Camera;
 
 
