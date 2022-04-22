@@ -100,6 +100,7 @@ impl ControllerInput {
             Axis::RightY => self.axis_right_y = value,
             Axis::TriggerLeft => self.axis_trigger_left = value,
             Axis::TriggerRight => self.axis_trigger_right = value,
+            _ => {}
         }
     }
 
@@ -120,6 +121,7 @@ impl ControllerInput {
             Button::DPadDown => self.button_d_pad_down = value,
             Button::DPadLeft => self.button_d_pad_left = value,
             Button::DPadRight => self.button_d_pad_right = value,
+            _ => {}
         }
     }
 }
