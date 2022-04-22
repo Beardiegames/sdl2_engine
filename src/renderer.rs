@@ -1,4 +1,4 @@
-
+use sdl2::image::{InitFlag, LoadTexture};
 use std::{ cell::RefCell, rc::Rc, };
 
 use sdl2::{
@@ -72,7 +72,7 @@ impl Renderer {
         Ok(renderer)
     }
 
-    pub fn play<'s, EntityState, GameData>(&mut self, scene: &mut Scene<'s, EntityState, GameData>, target_fps: u64)
+    pub fn play<'s, EntityState, GameData>(&mut self, scene: &mut Scene<EntityState, GameData>, target_fps: u64)
          -> Result<(), String> 
     where 
     EntityState: Default + Clone,
@@ -93,11 +93,13 @@ impl Renderer {
         };
 
         // create texture maps from loaded surfaces
-        for surface in &scene.surfaces {
+        for path in &scene.asset_paths {
             context.textures.push(
-                texture_creator
-                    .create_texture_from_surface(&surface.1)
+                texture_creator.load_texture(path)
                     .map_err(|e| e.to_string())?
+                // texture_creator
+                //     .create_texture_from_surface(&surface.1)
+                //     .map_err(|e| e.to_string())?
             );
         }
         

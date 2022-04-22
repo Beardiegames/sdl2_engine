@@ -6,5 +6,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sdl2 = "0.34.5"
 swarm_pool = "0.1.9"
+
+[dependencies.sdl2]
+version = "*"
+default-features = false
+features = ["image"]
